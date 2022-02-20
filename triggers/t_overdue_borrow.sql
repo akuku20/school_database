@@ -1,4 +1,4 @@
-CREATE TRIGGER overdue_borrow 
+CREATE TRIGGER OverdueBorrow 
 ON Borrows
 AFTER INSERT, UPDATE 
 AS 

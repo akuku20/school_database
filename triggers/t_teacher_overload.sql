@@ -1,4 +1,4 @@
-CREATE TRIGGER teacher_overloaded
+CREATE TRIGGER TeacherOverloaded
 ON Lessons
 AFTER INSERT 
 AS 

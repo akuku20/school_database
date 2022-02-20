@@ -1,5 +1,5 @@
 
-CREATE PROCEDURE move_student_to_class @AccountLogin NVARCHAR(50), @Password NVARCHAR(50), @StudentFirstName NVARCHAR(50), @StudentLastName NVARCHAR(50), @ClassLabel NVARCHAR(2)
+CREATE PROCEDURE MoveStudentToClass @AccountLogin NVARCHAR(50), @Password NVARCHAR(50), @StudentFirstName NVARCHAR(50), @StudentLastName NVARCHAR(50), @ClassLabel NVARCHAR(2)
 AS
     IF EXISTS(SELECT TeacherId FROM Teachers T JOIN People A ON T.AccountId = A.AccountId WHERE A.Password = @Password)
     AND EXISTS(SELECT StudentId FROM Students WHERE FirstName = @StudentFirstName AND LastName = @StudentLastName)

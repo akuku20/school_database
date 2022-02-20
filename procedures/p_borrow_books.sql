@@ -1,4 +1,4 @@
-CREATE PROCEDURE borrow_book @AccountId int, @Password nvarchar(30), @Title nvarchar(30)
+CREATE PROCEDURE BorrowBook @AccountId int, @Password nvarchar(30), @Title nvarchar(30)
 AS
     IF EXISTS(SELECT AccountId FROM People WHERE AccountId = @AccountId AND Password = @Password) BEGIN
             BEGIN TRANSACTION

@@ -1,4 +1,4 @@
-CREATE FUNCTION get_overdue_books (
+CREATE FUNCTION GetOverdueBooks (
     @StudentId INT
 )
 RETURNS TABLE

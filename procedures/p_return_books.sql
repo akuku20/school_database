@@ -1,4 +1,4 @@
-CREATE PROCEDURE return_book @AccountId INT, @Password nvarchar(30), @Title nvarchar(30)
+CREATE PROCEDURE ReturnBook @AccountId INT, @Password nvarchar(30), @Title nvarchar(30)
 AS
     IF EXISTS(SELECT AccountId FROM People WHERE AccountId = @AccountId AND Password = @Password) BEGIN
             BEGIN TRANSACTION

@@ -1,4 +1,4 @@
-CREATE TRIGGER fifth_note
+CREATE TRIGGER FifthNote
 ON Notes
 AFTER INSERT
 AS
@@ -8,8 +8,3 @@ AS
         END
 GO
 
-INSERT INTO Notes VALUES (1,4,'05-05-2020','jedzenie na lekcji')
-INSERT INTO Notes VALUES (2,4,'05-05-2020','picie na lekcji')
-INSERT INTO Notes VALUES (1,4,'05-05-2020','spanie na lekcji')
-INSERT INTO Notes VALUES (1,4,'05-05-2020','rozmawianie na lekcji')
-INSERT INTO Notes VALUES (1,4,'05-05-2020','rzucanie w nauczyciela papierkami na lekcji')

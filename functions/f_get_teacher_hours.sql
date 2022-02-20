@@ -1,4 +1,4 @@
-CREATE FUNCTION get_teacher_hours(
+CREATE FUNCTION GetTeacherHours(
     @TeacherId INT
 )
 RETURNS INT

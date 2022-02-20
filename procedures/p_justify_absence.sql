@@ -1,4 +1,4 @@
-CREATE PROCEDURE justify_absence @AccountId INT, @Password nvarchar(30), @AbsenceId INT
+CREATE PROCEDURE JustifyAbsence @AccountId INT, @Password nvarchar(30), @AbsenceId INT
 AS
     IF EXISTS(SELECT AccountId FROM People WHERE AccountId = @AccountId AND Password = @Password) BEGIN
         UPDATE Absences
