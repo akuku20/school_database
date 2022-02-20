@@ -1,8 +1,27 @@
 USE SchoolDB;
 
+IF OBJECT_ID('Absences', 'U') IS NOT NULL DROP TABLE Absences 
+IF OBJECT_ID('Borrows', 'U') IS NOT NULL DROP TABLE Borrows 
+IF OBJECT_ID('Notes', 'U') IS NOT NULL DROP TABLE Notes 
+IF OBJECT_ID('Books', 'U') IS NOT NULL DROP TABLE Books
+IF OBJECT_ID('Authors', 'U') IS NOT NULL DROP TABLE Authors
+IF OBJECT_ID('Grades', 'U') IS NOT NULL DROP TABLE Grades 
+IF OBJECT_ID('ExamResults', 'U') IS NOT NULL DROP TABLE ExamResults 
+IF OBJECT_ID('Exams', 'U') IS NOT NULL DROP TABLE Exams
+IF OBJECT_ID('ExtraLessons', 'U') IS NOT NULL DROP TABLE ExtraLessons 
+IF OBJECT_ID('Lessons', 'U') IS NOT NULL DROP TABLE Lessons
+IF OBJECT_ID('Classrooms', 'U') IS NOT NULL DROP TABLE Classrooms
+IF OBJECT_ID('Students', 'U') IS NOT NULL DROP TABLE Students
+IF OBJECT_ID('StudentsDetails', 'U') IS NOT NULL DROP TABLE StudentsDetails 
+IF OBJECT_ID('Classes', 'U') IS NOT NULL DROP TABLE Classes
+IF OBJECT_ID('Teachers', 'U') IS NOT NULL DROP TABLE Teachers
+IF OBJECT_ID('People', 'U') IS NOT NULL DROP TABLE People 
+GO
+
 CREATE TABLE People (
 	AccountId INTEGER NOT NULL PRIMARY KEY IDENTITY(1,1),
 	Password NVARCHAR(50) NOT NULL
+    CONSTRAINT password_length CHECK(LEN(Password) >= 5)
 )
 GO
 
@@ -13,31 +32,35 @@ CREATE TABLE Teachers (
 	Gender NVARCHAR(1) NOT NULL,
 	PhoneNumber VARCHAR(9) NOT NULL,
 	Pesel VARCHAR(11) NOT NULL UNIQUE,
-	AccountId INTEGER NOT NULL,
+	AccountId INTEGER NOT NULL UNIQUE,
 	CONSTRAINT TeachersFK FOREIGN KEY(AccountId) REFERENCES People(AccountID)
 	ON UPDATE CASCADE
-	ON DELETE CASCADE
+	ON DELETE CASCADE,
+    CONSTRAINT phone_valid CHECK(ISNUMERIC(PhoneNumber) = 1 AND LEN(PhoneNumber) = 9),
+    CONSTRAINT pesel_valid CHECK(ISNUMERIC(Pesel) = 1 AND LEN(Pesel) = 11)
 )
 GO
+
 CREATE TABLE Classes (
 	ClassId INTEGER NOT NULL PRIMARY KEY IDENTITY(1,1),
 	ClassLabel NVARCHAR(2) NOT NULL,
-	HeadTeacherID INTEGER NOT NULL,
+	HeadTeacherId INTEGER NOT NULL,
 	CONSTRAINT HeadTeacherFK FOREIGN KEY (HeadTeacherId) REFERENCES Teachers(TeacherId)
 )
-
+GO 
 
 CREATE TABLE Students(
 	StudentId INTEGER NOT NULL PRIMARY KEY IDENTITY(1,1),
     FirstName NVARCHAR(50) NOT NULL,
     LastName NVARCHAR(50) NOT NULL,
 	ClassId INTEGER NOT NULL,
-	AccountId INTEGER NOT NULL,
+	AccountId INTEGER NOT NULL UNIQUE,
     CONSTRAINT StudentsAcFK FOREIGN KEY(AccountId) REFERENCES People(AccountId)
 	ON UPDATE CASCADE
     ON DELETE CASCADE,
 	CONSTRAINT StudentClassFK FOREIGN KEY(ClassId) REFERENCES Classes(ClassId)
 )
+GO
 
 CREATE TABLE StudentsDetails(
 	StudentId INTEGER NOT NULL PRIMARY KEY IDENTITY(1,1),
@@ -45,50 +68,64 @@ CREATE TABLE StudentsDetails(
     Gender NVARCHAR(1) NOT NULL,
     PhoneNumber VARCHAR(9) NOT NULL,
 	Pesel VARCHAR(11) NOT NULL UNIQUE,
-	AccountId Integer NOT NULL,
+	AccountId Integer NOT NULL UNIQUE,
 	CONSTRAINT StudentsFK FOREIGN KEY(AccountId) REFERENCES People(AccountId)
 	ON UPDATE CASCADE
-    ON DELETE CASCADE
+    ON DELETE CASCADE,
+    CONSTRAINT student_phone_valid CHECK(ISNUMERIC(PhoneNumber) = 1 AND LEN(PhoneNumber) = 9),
+    CONSTRAINT student_pesel_valid CHECK(ISNUMERIC(Pesel) = 1 AND LEN(Pesel) = 11)
 )
+GO
 
 CREATE TABLE Classrooms (
-	ClassroomID INTEGER NOT NULL PRIMARY KEY IDENTITY(1,1),
+	ClassroomId INTEGER NOT NULL PRIMARY KEY IDENTITY(1,1),
 	ClassroomName NVARCHAR(50) NOT NULL
 )
+GO
 
 CREATE TABLE Lessons (
 	LessonID INTEGER NOT NULL PRIMARY KEY IDENTITY(1,1),
 	LessonName NVARCHAR(50) NOT NULL,
-    LessonDay NVARCHAR(9),
+    LessonDay NVARCHAR(20),
 	LessonStart TIME NOT NULL,
 	LessonEnd TIME NOT NULL,
+    LessonClass INT NOT NULL,
 	LessonTeacher INTEGER NOT NULL,
 	Classroom INTEGER NOT NULL,
-	CONSTRAINT TeacherFK FOREIGN KEY(LessonTeacher) REFERENCES Teachers(TeacherID),
+    CONSTRAINT ClassFK FOREIGN KEY(LessonClass) REFERENCES Classes(ClassId),
+	CONSTRAINT TeacherFK FOREIGN KEY(LessonTeacher) REFERENCES Teachers(TeacherId),
 	CONSTRAINT ClasroomFK FOREIGN KEY(Classroom) REFERENCES Classrooms(ClassroomID)
 )
+GO
 
 CREATE TABLE ExtraLessons (
 	ExtraLessonID INTEGER NOT NULL PRIMARY KEY IDENTITY(1,1),
 	LessonName NVARCHAR(50) NOT NULL,
+    LessonDay NVARCHAR(20),
 	LessonStart TIME NOT NULL,
 	LessonEnd TIME NOT NULL,
 	LessonTeacher INTEGER NOT NULL,
+    LessonClass INT NOT NULL,
 	Classroom INTEGER NOT NULL,
-	CONSTRAINT TeacherEFK FOREIGN KEY(LessonTeacher) REFERENCES Teachers(TeacherID),
-	CONSTRAINT ClasroomEFK FOREIGN KEY(Classroom) REFERENCES Classrooms(ClassroomID)
+    CONSTRAINT ClassEFK FOREIGN KEY(LessonClass) REFERENCES Classes(ClassId),
+	CONSTRAINT TeacherEFK FOREIGN KEY(LessonTeacher) REFERENCES Teachers(TeacherId),
+	CONSTRAINT ClassroomEFK FOREIGN KEY(Classroom) REFERENCES Classrooms(ClassroomId)
 )
+GO
 
 CREATE TABLE Grades(
 	GradeId INTEGER NOT NULL PRIMARY KEY IDENTITY(1,1),
     StudentId INTEGER NOT NULL,
     TeacherId INTEGER NOT NULL,
-    Grade FLOAT,
+    GradeLesson NVARCHAR(20) NOT NULL,
+    Grade FLOAT NOT NULL,
     Date DATE NOT NULL,
     Type NVARCHAR(50),
     CONSTRAINT StudentGradeFK FOREIGN KEY(StudentId) REFERENCES Students(StudentId),
-    CONSTRAINT TeacherGradeFK FOREIGN KEY(TeacherId) REFERENCES Teachers(TeacherId)
+    CONSTRAINT TeacherGradeFK FOREIGN KEY(TeacherId) REFERENCES Teachers(TeacherId),
+    CONSTRAINT grade_valid CHECK(Grade BETWEEN 1 AND 6)
 )
+GO
 
 CREATE TABLE Absences (
     AbsenceId INTEGER NOT NULL PRIMARY KEY IDENTITY(1,1),
@@ -99,8 +136,9 @@ CREATE TABLE Absences (
     ON UPDATE CASCADE
     ON DELETE CASCADE
 )
+GO
 
-CREATE TABLE Notes (
+CREATE TABLE Notes(
     NoteId INTEGER NOT NULL PRIMARY KEY IDENTITY(1,1),
     TeacherId INTEGER NOT NULL,
     StudentId INTEGER NOT NULL,
@@ -109,6 +147,7 @@ CREATE TABLE Notes (
     CONSTRAINT NotingTeacherId FOREIGN KEY(TeacherId) REFERENCES Teachers(TeacherId),
     CONSTRAINT NotedStudentId FOREIGN KEY(StudentId) REFERENCES Students(StudentId)
 )
+GO
 
 CREATE TABLE Exams (
     ExamId INTEGER NOT NULL PRIMARY KEY IDENTITY(1,1),
@@ -118,6 +157,7 @@ CREATE TABLE Exams (
     CONSTRAINT ExamsFK FOREIGN KEY(ClassId) REFERENCES Classes(ClassId),
     CONSTRAINT CourseFK FOREIGN KEY(LessonId) REFERENCES Lessons(LessonId)
 )
+GO
 
 CREATE TABLE ExamResults (
     ExamId INTEGER NOT NULL,
@@ -126,13 +166,16 @@ CREATE TABLE ExamResults (
     ResultDate DATE NOT NULL,
 	CONSTRAINT ExamResultsPK PRIMARY KEY(ExamId, StudentId),
     CONSTRAINT ExamsResultsFK FOREIGN KEY(ExamId) REFERENCES Exams(ExamId),
+    CONSTRAINT exam_grade_valid CHECK(Grade BETWEEN 1 AND 6)
 )
+GO
 
 CREATE TABLE Authors (
     AuthorId INTEGER NOT NULL PRIMARY KEY IDENTITY(1,1),
     Name NVARCHAR(50) NOT NULL,
     Surname NVARCHAR(50) NOT NULL,
 )
+GO
 
 CREATE TABLE Books (
     BookId INTEGER NOT NULL PRIMARY KEY IDENTITY(1,1),
@@ -142,6 +185,7 @@ CREATE TABLE Books (
     Category NVARCHAR(50) NOT NULL,
     CONSTRAINT AuthorFK FOREIGN KEY(AuthorId) REFERENCES Authors(AuthorId)
 )
+GO
 
 CREATE TABLE Borrows (
     BorrowId INTEGER NOT NULL PRIMARY KEY IDENTITY(1,1),
